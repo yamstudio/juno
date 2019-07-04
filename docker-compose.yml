@@ -1,10 +1,38 @@
-version: '3'
+version: '3.3'
 services:
+  shadowsocks:
+    image: acrisliu/shadowsocks-libev:latest
+    environment:
+      SERVER_ADDR: 0.0.0.0
+      SERVER_PORT: 80
+      PASSWORD_FILE: /run/secrets/shadowsocks_password
+      METHOD: chacha20-ietf-poly1305
+      TIMEOUT: 60
+      DNS_ADDR: 1.1.1.1,1.0.0.1
+      ARGS: '--reuse-port --no-delay --plugin v2ray-plugin --plugin-opts server;http;path=/hej -u'
+    entrypoint: '/bin/sh -c "ss-server -s $$SERVER_ADDR -p $$SERVER_PORT -k $$(cat $$PASSWORD_FILE) -m $$METHOD -t $$TIMEOUT -d $$DNS_ADDRS $$ARGS"'
+    expose:
+      - 80/tcp
+      - 80/udp
+    networks:
+      - nginx_network
+    secrets:
+      - shadowsocks_password
   nginx:
     image: nginx:1.17.1-alpine
     ports:
-      - '443:443'
+      - 443:443
     volumes:
       - ./data/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./data/nginx/conf.d:/etc/nginx/conf.d
       - ./data/nginx/ssl:/etc/nginx/ssl
+    networks:
+      - nginx_network
+    depends_on:
+      - shadowsocks
+networks:
+  nginx_network:
+    driver: bridge
+secrets:
+  shadowsocks_password:
+    file: ./data/secrets/shadowsocks_password
