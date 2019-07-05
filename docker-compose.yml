@@ -5,7 +5,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: hello
     volumes:
-      - ./data/mariadb:/var/lib/mysql
+      - ./data/mariadb/db:/var/lib/mysql
+      - ./data/mariadb/conf.d:/etc/mysql/conf.d
     expose:
       - 3306/tcp
     ports:
