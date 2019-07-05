@@ -1,5 +1,15 @@
 version: '3.3'
 services:
+  mariadb:
+    image: mariadb:10.4.6-bionic
+    environment:
+      MYSQL_ROOT_PASSWORD: hello
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+    expose:
+      - 3306/tcp
+    ports:
+      - 3306:3306
   shadowsocks:
     image: acrisliu/shadowsocks-libev:latest
     environment:
