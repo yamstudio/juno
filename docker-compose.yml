@@ -1,5 +1,21 @@
 version: '3.3'
 services:
+  mariadb:
+    image: mariadb:10.4.6-bionic
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_USER_PASSWORD_FILE: /run/secrets/mysql_user_password
+      MYSQL_USER: yqin
+    volumes:
+      - ./data/mariadb/db:/var/lib/mysql
+      - ./data/mariadb/conf.d/local.cnf:/etc/mysql/conf.d/local.cnf
+    expose:
+      - 3306/tcp
+    ports:
+      - 3306:3306
+    secrets:
+      - mysql_root_password
+      - mysql_user_password
   shadowsocks:
     image: acrisliu/shadowsocks-libev:latest
     environment:
@@ -36,3 +52,7 @@ networks:
 secrets:
   shadowsocks_password:
     file: ./data/secrets/shadowsocks_password
+  mysql_root_password:
+    file: ./data/secrets/mysql_root_password
+  mysql_user_password:
+    file: ./data/secrets/mysql_user_password
