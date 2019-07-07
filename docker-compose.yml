@@ -22,7 +22,7 @@ services:
       - ./data/kestrel/publish:/app/dotnetcore:ro
     environment:
       CUSTOMCONNSTR_ApplicationDbContext: Server=mariadb;Database=ApplicationDbContext;User=root
-      CUSTOMCONNSTR_MySiteContext: Server=mariadb;Database=MySiteContext;User=root;Password=hello
+      CUSTOMCONNSTR_MySiteContext: Server=mariadb;Database=MySiteContext;User=root
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       KESTREL_ADMIN_PASSWORD_FILE: /run/secrets/kestrel_admin_password
       ASPNETCORE_Admin__FirstName: The
