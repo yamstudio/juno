@@ -11,11 +11,40 @@ services:
       - ./data/mariadb/conf.d/local.cnf:/etc/mysql/conf.d/local.cnf
     expose:
       - 3306/tcp
-    ports:
-      - 3306:3306
     secrets:
       - mysql_root_password
       - mysql_user_password
+    networks:
+      - nginx_network
+  kestrel:
+    image: mcr.microsoft.com/dotnet/core/aspnet:2.2-alpine3.9
+    volumes:
+      - ./data/kestrel/publish:/app/dotnetcore:ro
+    environment:
+      CUSTOMCONNSTR_ApplicationDbContext: Server=mariadb;Database=ApplicationDbContext;User=root
+      CUSTOMCONNSTR_MySiteContext: Server=mariadb;Database=MySiteContext;User=root
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      KESTREL_ADMIN_PASSWORD_FILE: /run/secrets/kestrel_admin_password
+      ASPNETCORE_Admin__FirstName: The
+      ASPNETCORE_Admin__LastName: Admin
+      ASPNETCORE_Admin__Email: admin@yujunqin.com
+      ASPNETCORE_Admin__UserName: admin@yujunqin.com
+    working_dir: /app/dotnetcore
+    entrypoint: >-
+      sh -c 
+      "CUSTOMCONNSTR_ApplicationDbContext=\"$$CUSTOMCONNSTR_ApplicationDbContext;Password=$$(cat $$MYSQL_ROOT_PASSWORD_FILE)\" 
+      CUSTOMCONNSTR_MySiteContext=\"$$CUSTOMCONNSTR_MySiteContext;Password=$$(cat $$MYSQL_ROOT_PASSWORD_FILE)\" 
+      ASPNETCORE_Admin__Password=\"$$(cat $$KESTREL_ADMIN_PASSWORD_FILE)\" 
+      dotnet /app/dotnetcore/MySiteDotNet.dll"
+    networks:
+      - nginx_network
+    expose:
+      - 80/tcp
+    depends_on:
+      - mariadb
+    secrets:
+      - kestrel_admin_password
+      - mysql_root_password
   shadowsocks:
     image: acrisliu/shadowsocks-libev:latest
     environment:
@@ -46,6 +75,7 @@ services:
       - nginx_network
     depends_on:
       - shadowsocks
+      - kestrel
 networks:
   nginx_network:
     driver: bridge
@@ -56,3 +86,5 @@ secrets:
     file: ./data/secrets/mysql_root_password
   mysql_user_password:
     file: ./data/secrets/mysql_user_password
+  kestrel_admin_password:
+    file: ./data/secrets/kestrel_admin_password
