@@ -1,90 +1,21 @@
-version: '3.3'
+version: '3'
 services:
-  mariadb:
-    image: mariadb:10.4.6-bionic
-    environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
-      MYSQL_USER_PASSWORD_FILE: /run/secrets/mysql_user_password
-      MYSQL_USER: yqin
+  wordpress:
+    image: wordpress:fpm
+    restart: always
     volumes:
-      - ./data/mariadb/db:/var/lib/mysql
-      - ./data/mariadb/conf.d/local.cnf:/etc/mysql/conf.d/local.cnf
-    expose:
-      - 3306/tcp
-    secrets:
-      - mysql_root_password
-      - mysql_user_password
-    networks:
-      - nginx_network
-  kestrel:
-    image: mcr.microsoft.com/dotnet/core/aspnet:2.2-alpine3.9
-    volumes:
-      - ./data/kestrel/publish:/app/dotnetcore:ro
+      - ${WEBAPP_STORAGE_HOME}/site/wwwroot/wordpress:/var/www/html
+      - ${WEBAPP_STORAGE_HOME}/site/wwwroot/certs:/etc/ssl/certs
     environment:
-      CUSTOMCONNSTR_ApplicationDbContext: Server=mariadb;Database=ApplicationDbContext;User=root
-      CUSTOMCONNSTR_MySiteContext: Server=mariadb;Database=MySiteContext;User=root
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
-      KESTREL_ADMIN_PASSWORD_FILE: /run/secrets/kestrel_admin_password
-      ASPNETCORE_Admin__FirstName: The
-      ASPNETCORE_Admin__LastName: Admin
-      ASPNETCORE_Admin__Email: admin@yujunqin.com
-      ASPNETCORE_Admin__UserName: admin@yujunqin.com
-    working_dir: /app/dotnetcore
-    entrypoint: >-
-      sh -c 
-      "CUSTOMCONNSTR_ApplicationDbContext=\"$$CUSTOMCONNSTR_ApplicationDbContext;Password=$$(cat $$MYSQL_ROOT_PASSWORD_FILE)\" 
-      CUSTOMCONNSTR_MySiteContext=\"$$CUSTOMCONNSTR_MySiteContext;Password=$$(cat $$MYSQL_ROOT_PASSWORD_FILE)\" 
-      ASPNETCORE_Admin__Password=\"$$(cat $$KESTREL_ADMIN_PASSWORD_FILE)\" 
-      dotnet /app/dotnetcore/MySiteDotNet.dll"
-    networks:
-      - nginx_network
-    expose:
-      - 80/tcp
-    depends_on:
-      - mariadb
-    secrets:
-      - kestrel_admin_password
-      - mysql_root_password
-  shadowsocks:
-    image: acrisliu/shadowsocks-libev:latest
-    environment:
-      SERVER_ADDR: 0.0.0.0
-      SERVER_PORT: 80
-      PASSWORD_FILE: /run/secrets/shadowsocks_password
-      METHOD: chacha20-ietf-poly1305
-      TIMEOUT: 60
-      DNS_ADDR: 1.1.1.1,1.0.0.1
-      ARGS: '--reuse-port --no-delay --plugin v2ray-plugin --plugin-opts server;http;path=/hej -u'
-    entrypoint: '/bin/sh -c "ss-server -s $$SERVER_ADDR -p $$SERVER_PORT -k $$(cat $$PASSWORD_FILE) -m $$METHOD -t $$TIMEOUT -d $$DNS_ADDRS $$ARGS"'
-    expose:
-      - 80/tcp
-      - 80/udp
-    networks:
-      - nginx_network
-    secrets:
-      - shadowsocks_password
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );
+        define( 'MYSQL_CLIENT_CA', '/etc/ssl/certs/BaltimoreCyberTrustRoot.crt.pem' );
   nginx:
-    image: nginx:1.17.1-alpine
+    image: nginx:latest
+    depends_on: wordpress
+    restart: always
     ports:
-      - 443:443
+      - "80:80"
     volumes:
-      - ./data/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./data/nginx/conf.d:/etc/nginx/conf.d
-      - ./data/nginx/ssl:/etc/nginx/ssl
-    networks:
-      - nginx_network
-    depends_on:
-      - shadowsocks
-      - kestrel
-networks:
-  nginx_network:
-    driver: bridge
-secrets:
-  shadowsocks_password:
-    file: ./data/secrets/shadowsocks_password
-  mysql_root_password:
-    file: ./data/secrets/mysql_root_password
-  mysql_user_password:
-    file: ./data/secrets/mysql_user_password
-  kestrel_admin_password:
-    file: ./data/secrets/kestrel_admin_password
+      - ${WEBAPP_STORAGE_HOME}/site/wwwroot/wordpress:/var/www/html
+      - ${WEBAPP_STORAGE_HOME}/site/wwwroot/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf

@@ -1,0 +1,198 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.1",
+  "parameters": {
+    "siteName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "sku": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "defaultValue": "B1",
+      "metadata": {
+        "description": "The pricing tier for the hosting plan."
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the key vault that contains the secrets."
+      }
+    },
+    "keyVaultResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group of the key vault that contains the secrets."
+      }
+    },
+    "sslCertificateKeyVaultSecretName": {
+      "type": "string",
+      "metadata": {
+        "description": "The secret name of the SSL certificate in the key vault."
+      }
+    },
+    "wordpressDbHostKeyVaultSecretName": {
+      "type": "string",
+      "metadata": {
+        "description": "The key vault secret URI of WordPress database host."
+      }
+    },
+    "wordpressDbNameKeyVaultSecretName": {
+      "type": "string",
+      "metadata": {
+        "description": "The key vault secret URI of WordPress database name."
+      }
+    },
+    "wordpressDbPasswordKeyVaultSecretName": {
+      "type": "string",
+      "metadata": {
+        "description": "The key vault secret URI of WordPress database password."
+      }
+    },
+    "wordpressDbUserKeyVaultSecretName": {
+      "type": "string",
+      "metadata": {
+        "description": "The key vault secret URI of WordPress database user."
+      }
+    }
+  },
+  "variables": {
+    "hostingPlanName": "[concat(parameters('siteName'), '-AppService')]",
+    "wordpressDbHostSecretUri": "[concat(parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('wordpressDbHostKeyVaultSecretName'))]",
+    "wordpressDbNameSecretUri": "[concat(parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('wordpressDbNameKeyVaultSecretName'))]",
+    "wordpressDbPasswordSecretUri": "[concat(parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('wordpressDbPasswordKeyVaultSecretName'))]",
+    "wordpressDbUserSecretUri": "[concat(parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('wordpressDbUserKeyVaultSecretName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('hostingPlanName')]",
+      "location": "[parameters('location')]",
+      "kind": "linux",
+      "sku": {
+        "name": "[parameters('sku')]"
+      },
+      "properties": {
+        "name": "[variables('hostingPlanName')]",
+        "reserved": "true"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('siteName')]",
+      "location": "[parameters('location')]",
+      "kind": "app,linux,container",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+      ],
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "clientAffinityEnabled": false,
+        "httpsOnly": true,
+        "serverFarmId": "[variables('hostingPlanName')]",
+        "siteConfig": {
+          "alwaysOn": false,
+          "ftpsState": "FtpsOnly",
+          "http20Enabled": true,
+          "linuxFxVersion": "COMPOSE|dmVyc2lvbjogJzMnCnNlcnZpY2VzOgogIHdvcmRwcmVzczoKICAgIGltYWdlOiB3b3JkcHJlc3M6ZnBtCiAgICByZXN0YXJ0OiBhbHdheXMKICAgIHZvbHVtZXM6CiAgICAgIC0gJHtXRUJBUFBfU1RPUkFHRV9IT01FfS9zaXRlL3d3d3Jvb3Qvd29yZHByZXNzOi92YXIvd3d3L2h0bWwKICAgICAgLSAke1dFQkFQUF9TVE9SQUdFX0hPTUV9L3NpdGUvd3d3cm9vdC9jZXJ0czovZXRjL3NzbC9jZXJ0cwogICAgZW52aXJvbm1lbnQ6CiAgICAgIFdPUkRQUkVTU19DT05GSUdfRVhUUkE6IHwKICAgICAgICBkZWZpbmUoICdNWVNRTF9DTElFTlRfRkxBR1MnLCBNWVNRTElfQ0xJRU5UX1NTTCApOwogICAgICAgIGRlZmluZSggJ01ZU1FMX0NMSUVOVF9DQScsICcvZXRjL3NzbC9jZXJ0cy9CYWx0aW1vcmVDeWJlclRydXN0Um9vdC5jcnQucGVtJyApOwogIG5naW54OgogICAgaW1hZ2U6IG5naW54OmxhdGVzdAogICAgZGVwZW5kc19vbjogd29yZHByZXNzCiAgICByZXN0YXJ0OiBhbHdheXMKICAgIHBvcnRzOgogICAgICAtICI4MDo4MCIKICAgIHZvbHVtZXM6CiAgICAgIC0gJHtXRUJBUFBfU1RPUkFHRV9IT01FfS9zaXRlL3d3d3Jvb3Qvd29yZHByZXNzOi92YXIvd3d3L2h0bWwKICAgICAgLSAke1dFQkFQUF9TVE9SQUdFX0hPTUV9L3NpdGUvd3d3cm9vdC9uZ2lueC9jb25mLmQvZGVmYXVsdC5jb25mOi9ldGMvbmdpbngvY29uZi5kL2RlZmF1bHQuY29uZg==",
+          "minTlsVersion": "1.2",
+          "webSocketsEnabled": false
+        }
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2020-06-01",
+          "name": "appsettings",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('siteName'))]"
+          ],
+          "properties": {
+            "DOCKER_REGISTRY_SERVER_URL": "https://index.docker.io",
+            "WEBSITE_ENABLE_SYNC_UPDATE_SITE": "true",
+            "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "3",
+            "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "true",
+            "WORDPRESS_DB_HOST": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbHostSecretUri'), ')')]",
+            "WORDPRESS_DB_NAME": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbNameSecretUri'), ')')]",
+            "WORDPRESS_DB_PASSWORD": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbPasswordSecretUri'), ')')]",
+            "WORDPRESS_DB_USER": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbUserSecretUri'), ')')]"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-06-01",
+      "name": "[concat(parameters('siteName'), '-KeyVaultAccess')]",
+      "resourceGroup": "[parameters('keyVaultResourceGroup')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('siteName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.1",
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults/accessPolicies",
+              "apiVersion": "2019-09-01",
+              "name": "[concat(parameters('keyVaultName'), '/add')]",
+              "properties": {
+                "accessPolicies": [
+                  {
+                    "tenantId": "[reference(concat('Microsoft.Web/sites/', parameters('siteName'), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').tenantId]",
+                    "objectId": "[reference(concat('Microsoft.Web/sites/', parameters('siteName'), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]",
+                    "permissions": {
+                      "secrets": [
+                        "get"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/certificates",
+      "apiVersion": "2020-06-01",
+      "name": "ssl-certificate",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+      ],
+      "properties": {
+        "keyVaultId": "[resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
+        "keyVaultSecretName": "[parameters('sslCertificateKeyVaultSecretName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+      }
+    }
+  ]
+}
