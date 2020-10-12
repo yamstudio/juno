@@ -1,7 +1,0 @@
-[mysqld]
-# https://github.com/docker-library/mariadb/issues/95#issuecomment-391587301
-innodb_flush_method=littlesync
-innodb_use_native_aio=OFF
-log_bin=ON
-
-bind-address=0.0.0.0
