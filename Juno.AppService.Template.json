@@ -33,6 +33,12 @@
         "description": "The pricing tier for the hosting plan."
       }
     },
+    "composeFileContent": {
+      "type": "string",
+      "metadata": {
+        "description": "The content of the Docker compose file."
+      }
+    },
     "keyVaultName": {
       "type": "string",
       "metadata": {
@@ -74,10 +80,23 @@
       "metadata": {
         "description": "The key vault secret URI of WordPress database user."
       }
+    },
+    "mariadbSslCertificateBlob": {
+      "type": "string",
+      "metadata": {
+        "description": "The blob of the SSL certificate used for MariaDB."
+      }
+    },
+    "mariadbSslCertificateThumbprint": {
+      "type": "string",
+      "metadata": {
+        "description": "The thumbprint of the SSL certificate used for MariaDB."
+      }
     }
   },
   "variables": {
     "hostingPlanName": "[concat(parameters('siteName'), '-AppService')]",
+    "wordpressConfigExtra": "[concat('define( ''MYSQL_CLIENT_FLAGS'', MYSQLI_CLIENT_SSL ); define( ''MYSQL_CLIENT_CA'', ''/var/ssl/certs/', parameters('mariadbSslCertificateThumbprint'), '.der'' );')]",
     "wordpressDbHostSecretUri": "[concat(parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('wordpressDbHostKeyVaultSecretName'))]",
     "wordpressDbNameSecretUri": "[concat(parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('wordpressDbNameKeyVaultSecretName'))]",
     "wordpressDbPasswordSecretUri": "[concat(parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('wordpressDbPasswordKeyVaultSecretName'))]",
@@ -118,7 +137,7 @@
           "alwaysOn": false,
           "ftpsState": "FtpsOnly",
           "http20Enabled": true,
-          "linuxFxVersion": "COMPOSE|dmVyc2lvbjogJzMnCnNlcnZpY2VzOgogIHdvcmRwcmVzczoKICAgIGltYWdlOiB3b3JkcHJlc3M6ZnBtCiAgICByZXN0YXJ0OiBhbHdheXMKICAgIHZvbHVtZXM6CiAgICAgIC0gJHtXRUJBUFBfU1RPUkFHRV9IT01FfS9zaXRlL3d3d3Jvb3Qvd29yZHByZXNzOi92YXIvd3d3L2h0bWwKICAgICAgLSAke1dFQkFQUF9TVE9SQUdFX0hPTUV9L3NpdGUvd3d3cm9vdC9jZXJ0czovZXRjL3NzbC9jZXJ0cwogICAgZW52aXJvbm1lbnQ6CiAgICAgIFdPUkRQUkVTU19DT05GSUdfRVhUUkE6IHwKICAgICAgICBkZWZpbmUoICdNWVNRTF9DTElFTlRfRkxBR1MnLCBNWVNRTElfQ0xJRU5UX1NTTCApOwogICAgICAgIGRlZmluZSggJ01ZU1FMX0NMSUVOVF9DQScsICcvZXRjL3NzbC9jZXJ0cy9CYWx0aW1vcmVDeWJlclRydXN0Um9vdC5jcnQucGVtJyApOwogIG5naW54OgogICAgaW1hZ2U6IG5naW54OmxhdGVzdAogICAgZGVwZW5kc19vbjogd29yZHByZXNzCiAgICByZXN0YXJ0OiBhbHdheXMKICAgIHBvcnRzOgogICAgICAtICI4MDo4MCIKICAgIHZvbHVtZXM6CiAgICAgIC0gJHtXRUJBUFBfU1RPUkFHRV9IT01FfS9zaXRlL3d3d3Jvb3Qvd29yZHByZXNzOi92YXIvd3d3L2h0bWwKICAgICAgLSAke1dFQkFQUF9TVE9SQUdFX0hPTUV9L3NpdGUvd3d3cm9vdC9uZ2lueC9jb25mLmQvZGVmYXVsdC5jb25mOi9ldGMvbmdpbngvY29uZi5kL2RlZmF1bHQuY29uZg==",
+          "linuxFxVersion": "[concat('COMPOSE|', base64(parameters('composeFileContent')))]",
           "minTlsVersion": "1.2",
           "webSocketsEnabled": false
         }
@@ -135,7 +154,9 @@
             "DOCKER_REGISTRY_SERVER_URL": "https://index.docker.io",
             "WEBSITE_ENABLE_SYNC_UPDATE_SITE": "true",
             "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "3",
+            "WEBSITE_LOAD_CERTIFICATES": "*",
             "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "true",
+            "WORDPRESS_CONFIG_EXTRA": "[variables('wordpressConfigExtra')]",
             "WORDPRESS_DB_HOST": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbHostSecretUri'), ')')]",
             "WORDPRESS_DB_NAME": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbNameSecretUri'), ')')]",
             "WORDPRESS_DB_PASSWORD": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbPasswordSecretUri'), ')')]",
@@ -192,6 +213,19 @@
         "keyVaultId": "[resourceId(subscription().subscriptionId, parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
         "keyVaultSecretName": "[parameters('sslCertificateKeyVaultSecretName')]",
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/publicCertificates",
+      "apiVersion": "2020-06-01",
+      "name": "[concat(parameters('siteName'), '/mariadb-ssl-certificate')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+      ],
+      "properties": {
+        "blob": "[parameters('mariadbSslCertificateBlob')]",
+        "publicCertificateLocation": "CurrentUserMy"
       }
     }
   ]
