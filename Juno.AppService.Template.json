@@ -33,6 +33,12 @@
         "description": "The pricing tier for the hosting plan."
       }
     },
+    "composeFileContent": {
+      "type": "string",
+      "metadata": {
+        "description": "The content of the Docker compose file."
+      }
+    },
     "keyVaultName": {
       "type": "string",
       "metadata": {
@@ -78,13 +84,13 @@
     "mariadbSslCertificateBlob": {
       "type": "string",
       "metadata": {
-        "description": "The blob of the SSL certificate used for MariaDB"
+        "description": "The blob of the SSL certificate used for MariaDB."
       }
     },
     "mariadbSslCertificateThumbprint": {
       "type": "string",
       "metadata": {
-        "description": "The thumbprint of the SSL certificate used for MariaDB"
+        "description": "The thumbprint of the SSL certificate used for MariaDB."
       }
     }
   },
@@ -131,7 +137,7 @@
           "alwaysOn": false,
           "ftpsState": "FtpsOnly",
           "http20Enabled": true,
-          "linuxFxVersion": "COMPOSE|dmVyc2lvbjogJzMnCnNlcnZpY2VzOgogIHdvcmRwcmVzczoKICAgIGltYWdlOiB3b3JkcHJlc3M6ZnBtLWFscGluZQogICAgcmVzdGFydDogYWx3YXlzCiAgICB2b2x1bWVzOgogICAgICAtIHdvcmRwcmVzczovdmFyL3d3dy9odG1sCiAgbmdpbng6CiAgICBpbWFnZTogbmdpbng6YWxwaW5lCiAgICBkZXBlbmRzX29uOiB3b3JkcHJlc3MKICAgIHJlc3RhcnQ6IGFsd2F5cwogICAgcG9ydHM6CiAgICAgIC0gIjgwOjgwIgogICAgdm9sdW1lczoKICAgICAgLSB3b3JkcHJlc3M6L3Zhci93d3cvaHRtbAogICAgICAtICR7V0VCQVBQX1NUT1JBR0VfSE9NRX0vc2l0ZS93d3dyb290L25naW54L2NvbmYuZC9kZWZhdWx0LmNvbmY6L2V0Yy9uZ2lueC9jb25mLmQvZGVmYXVsdC5jb25mCnZvbHVtZXM6CiAgd29yZHByZXNzOg==",
+          "linuxFxVersion": "concat(['COMPOSE|', base64(parameters('composeFileContent'))]",
           "minTlsVersion": "1.2",
           "webSocketsEnabled": false
         }
