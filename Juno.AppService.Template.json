@@ -137,7 +137,7 @@
           "alwaysOn": false,
           "ftpsState": "FtpsOnly",
           "http20Enabled": true,
-          "linuxFxVersion": "concat(['COMPOSE|', base64(parameters('composeFileContent'))]",
+          "linuxFxVersion": "[concat('COMPOSE|', base64(parameters('composeFileContent')))]",
           "minTlsVersion": "1.2",
           "webSocketsEnabled": false
         }
