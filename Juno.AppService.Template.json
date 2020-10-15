@@ -33,6 +33,12 @@
         "description": "The pricing tier for the hosting plan."
       }
     },
+    "allowedIpRanges": {
+      "type": "array",
+      "metadata": {
+        "description": "The IP ranges that are allowed to access the site."
+      }
+    },
     "composeFileContent": {
       "type": "string",
       "metadata": {
@@ -137,6 +143,17 @@
           "alwaysOn": false,
           "ftpsState": "FtpsOnly",
           "http20Enabled": true,
+          "copy": [
+            {
+              "name": "ipSecurityRestrictions",
+              "count": "[length(parameters('allowedIpRanges'))]",
+              "input": {
+                "ipAddress": "[parameters('allowedIpRanges')[copyIndex('ipSecurityRestrictions')]]",
+                "action": "Allow",
+                "name": "[concat('IP-restriction-', copyIndex('ipSecurityRestrictions'))]"
+              }
+            }
+          ],
           "linuxFxVersion": "[concat('COMPOSE|', base64(parameters('composeFileContent')))]",
           "minTlsVersion": "1.2",
           "webSocketsEnabled": false
