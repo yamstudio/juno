@@ -98,6 +98,20 @@
       "metadata": {
         "description": "The thumbprint of the SSL certificate used for MariaDB."
       }
+    },
+    "containerLogsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 5,
+      "metadata": {
+        "description": "The retention in days of the container logs."
+      }
+    },
+    "containerLogsRetentionInMb": {
+      "type": "int",
+      "defaultValue": 50,
+      "metadata": {
+        "description": "The retention in MB of the container logs."
+      }
     }
   },
   "variables": {
@@ -178,6 +192,31 @@
             "WORDPRESS_DB_NAME": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbNameSecretUri'), ')')]",
             "WORDPRESS_DB_PASSWORD": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbPasswordSecretUri'), ')')]",
             "WORDPRESS_DB_USER": "[concat('@Microsoft.KeyVault(SecretUri=', variables('wordpressDbUserSecretUri'), ')')]"
+          }
+        },
+        {
+          "type": "config",
+          "apiVersion": "2020-06-01",
+          "name": "logs",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('siteName'))]"
+          ],
+          "properties": {
+            "applicationLogs": {
+              "fileSystem": {
+                "level": "Information"
+              }
+            },
+            "detailedErrorMessages": {
+              "enabled": true
+            },
+            "httpLogs": {
+              "fileSystem": {
+                "enabled": true,
+                "retentionInDays": "[parameters('containerLogsRetentionInDays')]",
+                "retentionInMb": "[parameters('containerLogsRetentionInMb')]"
+              }
+            }
           }
         }
       ]
