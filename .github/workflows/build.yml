@@ -13,7 +13,7 @@ jobs:
     - name: Download plugins
       run: wget https://downloads.wordpress.org/plugin/wp-quicklatex.latest-stable.zip
     - name: Unzip plugins
-      run: unzip -d data/wordpress/wp-content/plugins
+      run: unzip '*.zip' -d data/wordpress/wp-content/plugins
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
