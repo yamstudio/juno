@@ -1,0 +1,27 @@
+name: Build artifact
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Create directory for WordPress plugins
+      run: mkdir -p data/wordpress/wp-content/plugins
+    - name: Download WordPress plugins
+      run: while read name; do wget https://downloads.wordpress.org/plugin/$name.latest-stable.zip; done < .github/.plugins
+    - name: Unzip WordPress plugins
+      run: unzip '*.zip' -d data/wordpress/wp-content/plugins
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: juno-${{ github.run_number }}
+        path: |
+          data
+          *.yml
+          *.json
