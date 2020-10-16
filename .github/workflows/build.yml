@@ -17,7 +17,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: juno-${{ env.GITHUB_RUN_NUMBER }}
+        name: juno-${{ github.run_number }}
         path: |
           data
           *.yml
