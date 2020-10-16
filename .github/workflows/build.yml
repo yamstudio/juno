@@ -8,5 +8,17 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Create directory for WordPress plugins
+      run: mkdir -p data/wordpress/wp-content/plugins
     - name: Download plugins
-      run: unzip
+      run: wget https://downloads.wordpress.org/plugin/wp-quicklatex.latest-stable.zip
+    - name: Unzip plugins
+      run: unzip -d data/wordpress/wp-content/plugins
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: juno
+        path: |
+          data
+          *.yml
+          *.json
