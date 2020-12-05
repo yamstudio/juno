@@ -23,5 +23,4 @@ jobs:
         name: juno-${{ github.run_number }}
         path: |
           data
-          *.yml
           *.json
