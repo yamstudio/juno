@@ -17,6 +17,7 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - run: ls -R
     - name: Run ARM deploy
       uses: azure/arm-deploy@v1
       with:
