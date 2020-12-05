@@ -63,6 +63,12 @@
         "description": "The secret name of the SSL certificate in the key vault."
       }
     },
+    "sslCertificateThumbprint": {
+      "type": "string",
+      "metadata": {
+        "description": "The thumbprint of the SSL certificate."
+      }
+    },
     "wordpressDbHostKeyVaultSecretName": {
       "type": "string",
       "metadata": {
@@ -179,7 +185,8 @@
           "apiVersion": "2020-06-01",
           "name": "appsettings",
           "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', parameters('siteName'))]"
+            "[resourceId('Microsoft.Web/sites', parameters('siteName'))]",
+            "[resourceId('Microsoft.Web/sites/config', parameters('siteName'), 'logs')]"
           ],
           "properties": {
             "DOCKER_REGISTRY_SERVER_URL": "https://index.docker.io",
@@ -217,6 +224,18 @@
                 "retentionInMb": "[parameters('containerLogsRetentionInMb')]"
               }
             }
+          }
+        },
+        {
+          "type": "hostNameBindings",
+          "apiVersion": "2020-06-01",
+          "name": "yujunqin.com",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('siteName'))]"
+          ],
+          "properties": {
+            "sslState": "SniEnabled",
+            "thumbprint": "[parameters('sslCertificateThumbprint')]"
           }
         }
       ]
