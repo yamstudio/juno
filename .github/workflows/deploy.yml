@@ -19,7 +19,6 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Run ARM deploy
       uses: azure/arm-deploy@v1
-      working-directory: ./juno
       with:
-        template: Juno.AppService.Template.json
-        parameters: Juno.AppService.Parameters.json
+        template: ./juno/Juno.AppService.Template.json
+        parameters: ./juno/Juno.AppService.Parameters.json
