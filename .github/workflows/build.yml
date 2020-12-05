@@ -20,7 +20,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: juno-${{ github.run_number }}
+        name: juno
         path: |
           data
           *.json
