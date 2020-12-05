@@ -35,6 +35,9 @@
     "sslCertificateKeyVaultSecretName": {
       "value": "yujunqin-com"
     },
+    "sslCertificateThumbprint": {
+      "value": "DBED15B293E0BBCED3F918630A1C0A6B85B5A56A"
+    },
     "wordpressDbHostKeyVaultSecretName": {
       "value": "wordpressDbHost"
     },
