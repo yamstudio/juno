@@ -1,9 +1,6 @@
 name: Deploy artifact
 
-on:
-  push:
-    branches:
-    - wordpress/deploy-from-github
+on: [workflow_dispatch]
 
 jobs:
   deploy:
