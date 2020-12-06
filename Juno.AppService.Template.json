@@ -161,7 +161,7 @@
         "serverFarmId": "[variables('hostingPlanName')]",
         "siteConfig": {
           "alwaysOn": false,
-          "ftpsState": "FtpsOnly",
+          "ftpsState": "AllAllowed",
           "http20Enabled": true,
           "copy": [
             {
