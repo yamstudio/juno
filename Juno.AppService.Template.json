@@ -161,7 +161,7 @@
         "serverFarmId": "[variables('hostingPlanName')]",
         "siteConfig": {
           "alwaysOn": false,
-          "ftpsState": "FtpsOnly",
+          "ftpsState": "AllAllowed",
           "http20Enabled": true,
           "copy": [
             {
@@ -231,7 +231,8 @@
           "apiVersion": "2020-06-01",
           "name": "yujunqin.com",
           "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', parameters('siteName'))]"
+            "[resourceId('Microsoft.Web/sites', parameters('siteName'))]",
+            "[resourceId('Microsoft.Web/certificates', 'ssl-certificate')]"
           ],
           "properties": {
             "sslState": "SniEnabled",

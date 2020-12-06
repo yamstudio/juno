@@ -21,3 +21,12 @@ jobs:
         resourceGroupName: ${{ secrets.AZURE_RESOURCE_GROUP }}
         template: ./juno/Juno.AppService.Template.json
         parameters: ./juno/Juno.AppService.Parameters.json
+    - name: Upload files
+      uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      with:
+        protocol: ftp
+        local-dir: ./juno/data/
+        server-dir: site/wwwroot/
+        server: ${{ secrets.FTPS_ENDPOINT }}
+        username: ${{ secrets.FTPS_USERNAME }}
+        password: ${{ secrets.FTPS_PASSWORD }}
