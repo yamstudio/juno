@@ -25,7 +25,8 @@ jobs:
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
         protocol: ftps
-        local-dir: ./juno/data
+        local-dir: ./juno/data/
+        server-dir: site/wwwroot/
         server: ${{ secrets.FTPS_ENDPOINT }}
         username: ${{ secrets.FTPS_USERNAME }}
         password: ${{ secrets.FTPS_PASSWORD }}
